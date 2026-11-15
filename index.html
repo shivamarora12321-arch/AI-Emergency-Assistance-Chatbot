@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emergency Guidance Assistant — RAG demo</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">✚</div>
+    <div>
+      <h1>Emergency Guidance Assistant</h1>
+      <p class="tagline">Retrieval-augmented · approved sources only · runs 100% in your browser</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <span class="badge badge-private">🔒 No network · no storage · no tracking</span>
+    <button class="btn btn-ghost" id="btnExport" title="Download this conversation as a local text file">⬇ Export chat</button>
+    <button class="btn btn-ghost" id="btnClear" title="Erase the in-memory conversation immediately">🗑 Clear chat</button>
+  </div>
+</header>
+
+<div class="alert-strip" role="alert">
+  <span class="alert-label">🚨 In a real emergency, call first — India</span>
+  <a class="num-link" href="tel:112"><b>112</b> All emergencies</a>
+  <a class="num-link" href="tel:100"><b>100</b> Police</a>
+  <a class="num-link" href="tel:101"><b>101</b> Fire</a>
+  <a class="num-link" href="tel:108"><b>108</b> Ambulance</a>
+  <a class="num-link" href="tel:14416"><b>14416</b> Mental health</a>
+</div>
+
+<main class="layout">
+
+  <section class="chat-panel" aria-label="Chat">
+
+    <div class="chat-scroll" id="chatScroll">
+
+      <div class="msg assistant" id="welcome">
+        <div class="bubble">
+          <div class="msg-role">Assistant</div>
+          <p class="lead">Namaste 🙏 — I retrieve <em>approved emergency guidance</em> and quote it word-for-word with citations. I show my reasoning on every answer, and I run entirely inside this page: nothing you type is ever sent to a server.</p>
+          <div class="suggestions-title">Try one of these:</div>
+          <div class="starter-grid">
+            <button class="chip">What are the emergency numbers in India?</button>
+            <button class="chip">A dog bit my friend — what do we do?</button>
+            <button class="chip">Someone just fainted in front of me</button>
+            <button class="chip">My friend is choking, what do I do?</button>
+            <button class="chip">mere bhai ko saanp ne kaata hai</button>
+            <button class="chip">How do you work? Are you private?</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <form class="composer" id="chatForm" autocomplete="off">
+      <input id="chatInput" type="text" placeholder="Describe the situation or ask about first aid, hazards, preparedness…"
+             aria-label="Your message" maxlength="500">
+      <button class="btn btn-send" type="submit" id="btnSend">Send ➤</button>
+    </form>
+    <p class="composer-note">Answers are quoted from <span id="docCount">…</span> reviewed documents — the bot declines rather than guesses. <a href="#" id="linkHow">How it works</a></p>
+  </section>
+
+  <aside class="side-panel" aria-label="About this system">
+
+    <nav class="side-tabs" role="tablist">
+      <button class="side-tab active" data-tab="numbers" role="tab">📞 Numbers</button>
+      <button class="side-tab" data-tab="library" role="tab">📚 Library</button>
+      <button class="side-tab" data-tab="how" role="tab">🧠 How it works</button>
+      <button class="side-tab" data-tab="privacy" role="tab">🔐 Privacy &amp; safety</button>
+    </nav>
+
+    <div class="side-body">
+
+      <section class="side-tab-panel active" data-panel="numbers" aria-label="Emergency numbers India">
+        <h3>Emergency numbers · India 🇮🇳</h3>
+        <p class="side-intro">Tap a card to dial. Published by Government of India helplines — save these in your phone today.</p>
+        <div class="num-grid">
+          <a class="num-card num-hero" href="tel:112">
+            <span class="n">112</span>
+            <span class="s">National emergency · police, fire &amp; medical (ERSS)</span>
+          </a>
+          <a class="num-card" href="tel:100"><span class="n">100</span><span class="s">🚓 Police</span></a>
+          <a class="num-card" href="tel:101"><span class="n">101</span><span class="s">🚒 Fire &amp; rescue</span></a>
+          <a class="num-card" href="tel:108"><span class="n">108</span><span class="s">🚑 Ambulance (free)</span></a>
+          <a class="num-card" href="tel:1091"><span class="n">1091</span><span class="s">👩 Women in distress</span></a>
+          <a class="num-card" href="tel:1098"><span class="n">1098</span><span class="s">🧒 Childline</span></a>
+          <a class="num-card" href="tel:1078"><span class="n">1078</span><span class="s">🌊 Disaster (NDMA)</span></a>
+          <a class="num-card" href="tel:14416"><span class="n">14416</span><span class="s">💚 Tele-MANAS mental health</span></a>
+          <a class="num-card" href="tel:1930"><span class="n">1930</span><span class="s">🛡 Cyber fraud</span></a>
+          <a class="num-card" href="tel:139"><span class="n">139</span><span class="s">🚆 Railway assistance</span></a>
+        </div>
+        <p class="side-note">Elsewhere: 911 US/Canada · 112 EU · 999 UK · 000 Australia.</p>
+      </section>
+
+      <section class="side-tab-panel" data-panel="library" aria-label="Approved guidance documents">
+        <h3>Guidance library</h3>
+        <p class="side-intro">Every answer quotes from these documents. Each carries a review date and source note.</p>
+        <div id="docList" class="doc-list"><!-- populated by ui.js --></div>
+      </section>
+
+      <section class="side-tab-panel" data-panel="how" aria-label="How the system works">
+        <h3>A modern AI pattern, in miniature</h3>
+        <p>This page demonstrates the core ideas behind production assistants — small enough to audit end-to-end.</p>
+
+        <h4>1 · Retrieval (the R in RAG)</h4>
+        <p>Your message is tokenized and scored against every section of the knowledge base using <strong>BM25</strong>, the ranking function behind classic search engines. Top sections win by term frequency, rarity across the corpus, and length normalization.</p>
+
+        <h4>2 · Grounded generation (the G)</h4>
+        <p>Large language models <em>generate</em> prose and can invent facts ("hallucinate"). This demo takes the opposite approach: it <strong>composes extractively</strong>, copying approved sentences verbatim and citing the document each one came from. Nothing can be invented — which is why the confidence meter can be trusted.</p>
+
+        <h4>3 · Agent reasoning</h4>
+        <p>Instead of a single call, an <strong>agent loop</strong> decides what to do: scan for danger → classify intent → plan tools → search → gate by relevance → compose → attach safety layers. Every decision lands in the reasoning trace you can expand under each answer. An LLM-based assistant would slot into the "compose" step — the plumbing around it stays the same.</p>
+
+        <h4>4 · Guardrails</h4>
+        <p>A safety layer wraps both ends. On the way in: crisis and active-emergency detection outrank everything. On the way out: escalation banners, an honest "no approved guidance found" refusal below the relevance threshold, and a standing disclaimer. Scope is enforced too — out-of-domain requests are declined.</p>
+
+        <h4>5 · Why show all this?</h4>
+        <p>Transparency is a safety feature. When a system explains what it retrieved, why, and how confident it is, users can catch its mistakes — the most important control of all.</p>
+      </section>
+
+      <section class="side-tab-panel" data-panel="privacy" aria-label="Privacy and safety controls">
+        <h3>Privacy controls</h3>
+        <ul>
+          <li><strong>Zero network egress.</strong> The page makes no requests after loading — verifiable in your browser's DevTools Network tab. It even works offline.</li>
+          <li><strong>Zero persistence.</strong> No cookies, no localStorage. The conversation exists only in this tab's memory.</li>
+          <li><strong>One-click erasure.</strong> "Clear chat" wipes the transcript instantly.</li>
+          <li><strong>User-initiated export.</strong> "Export chat" writes a local file on your device only.</li>
+          <li><strong>PII redaction in traces.</strong> Phone numbers, emails, and street addresses are masked before being echoed anywhere.</li>
+        </ul>
+        <h3>Safety controls</h3>
+        <ul>
+          <li><strong>Emergency-first ordering.</strong> Detected emergencies put "call 112 now" at the very top, before any guidance.</li>
+          <li><strong>Crisis-line pinning.</strong> Self-harm indicators trigger a dedicated response with human crisis lines (Tele-MANAS 14416 in India, 988, Samaritans) — never just first-aid text.</li>
+          <li><strong>Abstention.</strong> Below the relevance threshold the bot refuses instead of guessing: "I could not find approved guidance…" with next-step suggestions.</li>
+          <li><strong>Verbatim sourcing.</strong> Every guidance line is copied from a reviewed document, with its review date one click away.</li>
+          <li><strong>Scope enforcement.</strong> Requests outside emergency guidance are politely declined.</li>
+        </ul>
+        <h3>Known limits</h3>
+        <ul>
+          <li>Small corpus (<span id="docCount2">…</span> documents, <span id="secCount">…</span> sections) — many valid questions will correctly return "no approved guidance".</li>
+          <li>Lexical search with synonym expansion, not true semantic understanding — unusual phrasings may still miss. Detected emergencies always get the universal first-steps checklist even then.</li>
+          <li>Understands English and common Hinglish emergency phrasings. Not a medical device, not reviewed by a medical authority — a demonstration of architecture.</li>
+        </ul>
+      </section>
+
+    </div>
+  </aside>
+
+</main>
+
+<footer class="page-foot">
+  Demo system for studying RAG, agent reasoning, and AI safety controls · Knowledge base last reviewed 2026-10-01 · Not a substitute for professional emergency response
+</footer>
+
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true">
+  <div class="modal">
+    <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Scripts: classic (non-module) so the page runs from file:// with no server -->
+<script src="../data/guidance/kb-meta.js"></script>
+<script src="../data/guidance/kb-medical.js"></script>
+<script src="../data/guidance/kb-hazards.js"></script>
+<script src="../core/safety.js"></script>
+<script src="../core/retriever.js"></script>
+<script src="../core/composer.js"></script>
+<script src="../core/privacy.js"></script>
+<script src="../core/agent.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>

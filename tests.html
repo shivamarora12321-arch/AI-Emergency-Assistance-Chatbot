@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Test suite — Emergency Guidance Assistant</title>
+<style>
+  body { background: #0b0f16; color: #e9eef6; font-family: "Segoe UI", system-ui, sans-serif; margin: 0; padding: 32px; }
+  h1 { font-size: 1.2rem; }
+  .summary { font-size: 1rem; margin: 12px 0 20px; padding: 12px 16px; border-radius: 10px; display: inline-block; }
+  .summary.ok { background: rgba(70,201,139,.14); color: #46c98b; border: 1px solid rgba(70,201,139,.4); }
+  .summary.bad { background: rgba(255,93,93,.14); color: #ff8a8a; border: 1px solid rgba(255,93,93,.4); }
+  .case { border: 1px solid rgba(148,166,196,.18); border-radius: 9px; padding: 10px 14px; margin: 8px 0; font-size: .86rem; }
+  .case .st { font-weight: 700; margin-right: 8px; }
+  .case.pass .st { color: #46c98b; }
+  .case.fail { border-color: rgba(255,93,93,.5); }
+  .case.fail .st { color: #ff8a8a; }
+  .case .err { color: #ffb454; font-family: Consolas, monospace; font-size: .78rem; margin-top: 4px; }
+</style>
+</head>
+<body>
+<h1>🧪 Emergency Guidance Assistant — test suite</h1>
+<p>Runs the same production scripts the chatbot uses, entirely in this tab. <span id="count"></span></p>
+<div id="out"></div>
+
+<script src="../data/guidance/kb-meta.js"></script>
+<script src="../data/guidance/kb-medical.js"></script>
+<script src="../data/guidance/kb-hazards.js"></script>
+<script src="../core/safety.js"></script>
+<script src="../core/retriever.js"></script>
+<script src="../core/composer.js"></script>
+<script src="../core/privacy.js"></script>
+<script src="../core/agent.js"></script>
+<script src="test-cases.js"></script>
+<script>
+  document.getElementById("count").textContent = EC.Tests.count() + " checks.";
+  var results = EC.Tests.run();
+  var pass = results.filter(function (r) { return r.pass; }).length;
+  var html = '<div class="summary ' + (pass === results.length ? "ok" : "bad") + '">' +
+             pass + " / " + results.length + " passed" + (pass === results.length ? " ✅" : " ❌") + "</div>";
+  results.forEach(function (r) {
+    html += '<div class="case ' + (r.pass ? "pass" : "fail") + '"><span class="st">' +
+            (r.pass ? "PASS" : "FAIL") + "</span>" + r.name +
+            (r.error ? '<div class="err">' + r.error.replace(/</g, "&lt;") + "</div>" : "") + "</div>";
+  });
+  document.getElementById("out").innerHTML = html;
+  document.title = (pass === results.length ? "✅ " : "❌ ") + pass + "/" + results.length + " — Emergency Assistant tests";
+</script>
+</body>
+</html>
